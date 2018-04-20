@@ -14,7 +14,7 @@ const cognitoUserPoolId = process.env.cognito_user_pool_id;
 const cognitoClientId = process.env.cognito_client_id;
 
 const restaurantsApiRoot = process.env.restaurants_api
-const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']
+const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
 var html;
 
@@ -33,25 +33,29 @@ function* getRestaurants() {
     path: url.pathname
   };
 
-  if(!process.env.AWS_ACCESS_KEY_ID) {
+  if (!process.env.AWS_ACCESS_KEY_ID) {
     let cred = (yield awscred.loadAsync()).credentials;
 
     process.env.AWS_ACCESS_KEY_ID = cred.accessKeyId;
     process.env.AWS_SECRET_ACCESS_KEY = cred.secretAccessKey;
+
+    if (cred.sessionToken) {
+      process.env.AWS_SESSION_TOKEN = cred.sessionToken;
+    }
   }
 
   aws4.sign(opts);
 
   let httpReq = http
-  .get(restaurantsApiRoot)
-  .set('Host', opts.headers['Host'])
-  .set('X-Amz-Date', opts.headers['X-Amz-Date'])
-  .set('Authorization', opts.headers['Authorization']);
+    .get(restaurantsApiRoot)
+    .set('Host', opts.headers['Host'])
+    .set('X-Amz-Date', opts.headers['X-Amz-Date'])
+    .set('Authorization', opts.headers['Authorization']);
 
-  if(opts.headers['X-Amz-Security-Token']) {
+  if (opts.headers['X-Amz-Security-Token']) {
     httpReq.set('X-Amz-Security-Token', opts.headers['X-Amz-Security-Token']);
   }
-  
+
   return (yield httpReq).body;
 }
 
@@ -61,7 +65,7 @@ module.exports.handler = co.wrap(function* (event, context, callback) {
   let htlm = Mustache.render(template, { restaurants });
   let dayOfWeek = days[new Date().getDay()];
   let view = {
-    dayOfWeek, 
+    dayOfWeek,
     restaurants,
     awsRegion,
     cognitoUserPoolId,
