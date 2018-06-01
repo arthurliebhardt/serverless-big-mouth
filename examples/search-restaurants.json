@@ -1,5 +1,5 @@
 {
-  "body": "{\"theme\":\"cartoon\"}",
+  "body": "",
   "resource": "/{proxy+}",
   "requestContext": {
     "resourceId": "123456",
